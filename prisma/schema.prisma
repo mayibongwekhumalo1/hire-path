@@ -1,0 +1,220 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User Model (for authentication)
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?   // For email/password auth
+  emailVerified DateTime? // For OAuth
+  image         String?
+  role          UserRole  @default(USER)
+  department    String?
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  hires        Hire[]     // Hires created by this user
+  
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN      // Can manage everything
+  HR         // Can manage hires
+  DEPARTMENT // Can view/manage department tasks
+  USER       // Basic access
+}
+
+// Employee Hire Model
+model Hire {
+  id               String    @id @default(cuid())
+  firstName        String
+  lastName         String
+  email            String    @unique
+  personalEmail    String?
+  phone            String?
+  department       String
+  jobTitle         String
+  employmentType   EmploymentType @default(FULL_TIME)
+  startDate        DateTime
+  workLocation     WorkLocation @default(OFFICE)
+  status           HireStatus @default(PENDING)
+  notes            String?
+  
+  // Manager Info
+  managerName      String?
+  managerEmail     String?
+  
+  // Compliance
+  hasBackgroundCheck  Boolean @default(false)
+  backgroundCheckDate DateTime?
+  hasSignedNDA        Boolean @default(false)
+  
+  // Timestamps
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  completedAt      DateTime?
+  
+  // Relations
+  userId          String?   // HR who created this hire
+  user            User?     @relation(fields: [userId], references: [id])
+  tasks           Task[]
+  documents       Document[]
+  
+  @@map("hires")
+  
+  // Indexes for performance
+  @@index([status])
+  @@index([department])
+  @@index([startDate])
+  @@index([createdAt])
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  CONTRACTOR
+  INTERN
+}
+
+enum WorkLocation {
+  OFFICE
+  REMOTE
+  HYBRID
+}
+
+enum HireStatus {
+  PENDING     // Onboarding in progress
+  ACTIVE      // Started working
+  COMPLETED   // Onboarding complete
+  CANCELLED   // Offer rescinded
+}
+
+// Task Model
+model Task {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  assignedTo      String    // email or department name
+  dueDate         DateTime
+  priority        Priority  @default(MEDIUM)
+  completed       Boolean   @default(false)
+  completedAt     DateTime?
+  notes           String?
+  
+  // Task categories
+  category        TaskCategory
+  
+  // Relations
+  hireId          String
+  hire            Hire      @relation(fields: [hireId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@map("tasks")
+  
+  // Indexes
+  @@index([hireId])
+  @@index([assignedTo])
+  @@index([dueDate])
+  @@index([completed])
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TaskCategory {
+  IT            // IT setup tasks
+  FACILITIES    // Desk, badge, etc.
+  HR            // Paperwork, benefits
+  SECURITY      // Access, badges
+  MANAGER       // Team intro, 1:1s
+  COMPLIANCE    // Legal requirements
+  TRAINING      // Required training
+}
+
+// Document Model
+model Document {
+  id              String    @id @default(cuid())
+  name            String
+  type            DocumentType
+  fileUrl         String?   // Cloud storage URL
+  fileName        String?
+  fileSize        Int?
+  uploadedBy      String
+  uploadedAt      DateTime  @default(now())
+  
+  // Relations
+  hireId          String
+  hire            Hire      @relation(fields: [hireId], references: [id], onDelete: Cascade)
+  
+  @@map("documents")
+}
+
+enum DocumentType {
+  RESUME
+  OFFER_LETTER
+  CONTRACT
+  NDA
+  TAX_FORM
+  ID_PROOF
+  DEGREE_CERTIFICATE
+  BACKGROUND_CHECK
+  OTHER
+}
+
+// Department Configuration
+model DepartmentConfig {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  displayName     String
+  
+  // Task Templates (stored as JSON)
+  taskTemplates   Json      // Array of task templates for this department
+  
+  // Settings
+  defaultManagerEmail String?
+  defaultITContact    String?
+  defaultFacilitiesContact String?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@map("department_configs")
+}
+
+// Audit Log
+model AuditLog {
+  id              String    @id @default(cuid())
+  action          String    // CREATE, UPDATE, DELETE, etc.
+  entityType      String    // "Hire", "Task", etc.
+  entityId        String
+  userId          String?
+  userEmail       String?
+  changes         Json?     // Before/after changes
+  ipAddress       String?
+  userAgent       String?
+  
+  createdAt       DateTime  @default(now())
+  
+  @@map("audit_logs")
+  
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([userId])
+}
