@@ -10,4 +10,7 @@ const adapter = new PrismaPg(pool)
 export default defineConfig({
   schema: './prisma/schema.prisma',
   adapter,
+  db: {
+    url: connectionString,
+  },
 })

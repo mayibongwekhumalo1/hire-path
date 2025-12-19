@@ -1,8 +1,42 @@
-import Link from 'next/link'
-import { FaFacebook, FaInstagramSquare,FaGoogle } from 'react-icons/fa';
+"use client";
 
+import Link from 'next/link';
+import { FaFacebook, FaInstagramSquare, FaGoogle } from 'react-icons/fa';
+import { signIn } from 'next-auth/react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function GreenLoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('Invalid email or password');
+      } else {
+        router.push('/dashboard/hires');
+      }
+    } catch (error) {
+      setError('An error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0b1f14] flex items-center justify-center p-4">
       <div className="relative w-full max-w-6xl rounded-3xl overflow-hidden shadow-2xl border border-emerald-900/40">
@@ -18,7 +52,7 @@ export default function GreenLoginPage() {
           {/* Left section */}
           <div className="p-12 text-white flex flex-col justify-center">
             <h1 className="text-4xl font-semibold tracking-tight">
-              Let’s Get Started
+               Get Started
             </h1>
             <p className="mt-4 max-w-md text-sm text-emerald-200/80 leading-relaxed">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -39,23 +73,34 @@ export default function GreenLoginPage() {
             <div className="w-full max-w-sm ml-auto text-white">
               <h2 className="text-xl font-semibold mb-8">Sign in</h2>
 
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 <input
                   type="email"
                   placeholder="Your Email"
                   className="glass-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
                 <input
                   type="password"
                   placeholder="Your Password"
                   className="glass-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
+
+                {error && (
+                  <p className="text-red-400 text-sm">{error}</p>
+                )}
 
                 <button
                   type="submit"
-                  className="w-full rounded-md bg-emerald-600 py-2.5 text-sm font-medium text-white hover:bg-emerald-500 transition"
+                  disabled={isLoading}
+                  className="w-full rounded-md bg-emerald-600 py-2.5 text-sm font-medium text-white hover:bg-emerald-500 transition disabled:opacity-50"
                 >
-                  Sign in
+                  {isLoading ? 'Signing in...' : 'Sign in'}
                 </button>
 
                 <p className="text-center text-xs text-emerald-200">
@@ -63,7 +108,6 @@ export default function GreenLoginPage() {
                   <Link href="/register" className="text-emerald-400 hover:underline">
                     Sign up here
                   </Link>
-
                 </p>
               </form>
 
@@ -82,7 +126,7 @@ export default function GreenLoginPage() {
                   </div>
                 ))}
               </div>
-              
+
             </div>
           </div>
         </div>
