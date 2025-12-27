@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getDatabase } from "@/lib/mongodb";
 import { hashPassword } from "@/lib/auth-utils";
 import { z } from "zod";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/types";
 
 const registerSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -16,10 +16,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { name, email, password, role } = registerSchema.parse(body);
 
+    const db = await getDatabase();
+    const usersCollection = db.collection('users');
+
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
+    const existingUser = await usersCollection.findOne({ email });
 
     if (existingUser) {
       return NextResponse.json(
@@ -32,26 +33,25 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await hashPassword(password);
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        department: true,
-        createdAt: true,
-      }
-    });
+    const now = new Date();
+    const user = {
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    const result = await usersCollection.insertOne(user);
+    const createdUser = { ...user, id: result.insertedId.toString() };
+
+    // Remove password from response
+    const { password: _, ...userResponse } = createdUser;
 
     return NextResponse.json({
       message: "User created successfully",
-      user
+      user: userResponse
     });
 
   } catch (error) {

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { FaFacebook, FaInstagramSquare, FaGoogle } from 'react-icons/fa';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@/types';
 
 export default function GreenSignupPage() {
   const [name, setName] = useState('');

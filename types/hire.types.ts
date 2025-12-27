@@ -1,4 +1,5 @@
 // Hire-related TypeScript interfaces and types
+import { ObjectId } from 'mongodb'
 
 export type EmploymentType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACTOR' | 'INTERN';
 export type WorkLocation = 'OFFICE' | 'REMOTE' | 'HYBRID';
@@ -7,6 +8,7 @@ export type Priority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type TaskCategory = 'IT' | 'FACILITIES' | 'HR' | 'SECURITY' | 'MANAGER' | 'COMPLIANCE' | 'TRAINING';
 
 export interface Hire {
+  _id?: ObjectId;
   id: string;
   firstName: string;
   lastName: string;
@@ -48,6 +50,7 @@ export interface HireFormData {
 }
 
 export interface Task {
+  _id?: ObjectId;
   id: string;
   title: string;
   description?: string;

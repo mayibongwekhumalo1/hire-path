@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { getDatabase } from '@/lib/mongodb'
 
 export async function GET() {
   try {
-    // Test the connection by running a simple query
-    await prisma.$connect()
-    return NextResponse.json({ message: 'Database connected successfully' })
+    // Test the connection by getting database stats
+    const db = await getDatabase()
+    const stats = await db.stats()
+    return NextResponse.json({
+      message: 'Database connected successfully',
+      stats: {
+        db: stats.db,
+        collections: stats.collections,
+        objects: stats.objects
+      }
+    })
   } catch (error) {
     console.error('Database connection error:', error)
     return NextResponse.json(

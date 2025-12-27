@@ -1,12 +1,4 @@
-import { UserRole } from "@prisma/client";
-
-export type User = {
-  id: string;
-  email?: string | null;
-  name?: string | null;
-  role: UserRole;
-  department?: string;
-};
+import { UserRole, User } from "@/types";
 
 export function hasPermission(user: User | null, requiredRoles: UserRole[]): boolean {
   if (!user) return false;
