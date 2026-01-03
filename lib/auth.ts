@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
-import { getDatabase } from "./mongodb";
+import connectToDatabase from "./mongodb";
 import { UserRole } from "@/types";
 
 export const authOptions: NextAuthOptions = {
@@ -17,7 +17,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const db = await getDatabase();
+        const db = await connectToDatabase();
         const usersCollection = db.collection('users');
 
         const user = await usersCollection.findOne({ email: credentials.email });

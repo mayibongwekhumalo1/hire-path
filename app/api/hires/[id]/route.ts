@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { HireService } from '@/lib/services/hire.service'
+import { HireService } from '@/controllers/hire.service'
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const hire = await HireService.getHireById(params.id)
+    const { id } = await params;
+    const hire = await HireService.getHireById(id)
 
     if (!hire) {
       return NextResponse.json(
@@ -30,8 +31,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
     const body = await request.json()
-    const hire = await HireService.updateHire(params.id, body)
+    const hire = await HireService.updateHire(id, body)
 
     if (!hire) {
       return NextResponse.json(
@@ -52,7 +54,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const success = await HireService.deleteHire(params.id)
+    const { id } = await params;
+    const success = await HireService.deleteHire(id)
 
     if (!success) {
       return NextResponse.json(

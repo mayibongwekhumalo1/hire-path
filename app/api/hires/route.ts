@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { HireService } from '@/lib/services/hire.service'
+import { HireService } from '@/controllers/hire.service'
 import { HireFilters } from '@/types/hire.types'
 
 export async function GET(request: NextRequest) {

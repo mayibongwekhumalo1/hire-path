@@ -1,17 +1,18 @@
 "use client";
 
 import Link from 'next/link';
-import { FaFacebook, FaInstagramSquare, FaGoogle } from 'react-icons/fa';
+import { FaFacebook, FaInstagramSquare, FaGoogle, FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { signIn } from 'next-auth/react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function GreenLoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const router = useRouter();
+   const [email, setEmail] = useState('');
+   const [password, setPassword] = useState('');
+   const [showPassword, setShowPassword] = useState(false);
+   const [isLoading, setIsLoading] = useState(false);
+   const [error, setError] = useState('');
+   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,38 +75,60 @@ export default function GreenLoginPage() {
               <h2 className="text-xl font-semibold mb-8">Sign in</h2>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                <input
-                  type="email"
-                  placeholder="Your Email"
-                  className="glass-input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <input
-                  type="password"
-                  placeholder="Your Password"
-                  className="glass-input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
+                  <input
+                    type="email"
+                    placeholder="Your Email"
+                    className="glass-input-enhanced pl-10"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="relative">
+                  <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Your Password"
+                    className="glass-input-enhanced pl-10 pr-10"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/60 hover:text-white/80 transition-colors"
+                  >
+                    {showPassword ? <FaEyeSlash className="h-4 w-4" /> : <FaEye className="h-4 w-4" />}
+                  </button>
+                </div>
 
                 {error && (
-                  <p className="text-red-400 text-sm">{error}</p>
+                  <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                    <p className="text-red-400 text-sm">{error}</p>
+                  </div>
                 )}
 
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full rounded-md bg-emerald-600 py-2.5 text-sm font-medium text-white hover:bg-emerald-500 transition disabled:opacity-50"
+                  className="w-full rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-500 py-3 text-sm font-semibold text-white hover:from-emerald-500 hover:to-emerald-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  {isLoading ? 'Signing in...' : 'Sign in'}
+                  {isLoading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Signing in...
+                    </div>
+                  ) : (
+                    'Sign in'
+                  )}
                 </button>
 
                 <p className="text-center text-xs text-emerald-200">
-                  Don 't have an account?{' '}
-                  <Link href="/register" className="text-emerald-400 hover:underline">
+                  Don't have an account?{' '}
+                  <Link href="/register" className="text-emerald-400 hover:text-emerald-300 transition-colors font-medium">
                     Sign up here
                   </Link>
                 </p>

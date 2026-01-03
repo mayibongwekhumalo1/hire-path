@@ -1,20 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { TaskService } from '@/lib/services/task.service'
+import { TaskService } from '@/controllers/task.service'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const hireId = searchParams.get('hireId')
 
-    if (!hireId) {
-      return NextResponse.json(
-        { error: 'hireId parameter is required' },
-        { status: 400 }
-      )
+    if (hireId) {
+      // Get tasks for specific hire
+      const tasks = await TaskService.getTasksByHireId(hireId)
+      return NextResponse.json(tasks)
+    } else {
+      // Get all tasks - need to implement this
+      // For now, return empty array or implement getAllTasks
+      const tasks = await TaskService.getAllTasks()
+      return NextResponse.json(tasks)
     }
-
-    const tasks = await TaskService.getTasksByHireId(hireId)
-    return NextResponse.json(tasks)
   } catch (error) {
     console.error('Error fetching tasks:', error)
     return NextResponse.json(

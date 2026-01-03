@@ -99,10 +99,10 @@ export function DatePicker({
               mode="single"
               selected={value}
               onSelect={handleDateSelect}
-              disabled={[
-                { before: minDate },
-                { after: maxDate }
-              ].filter(Boolean)}
+              disabled={minDate || maxDate ? [
+                minDate ? { before: minDate } : null,
+                maxDate ? { after: maxDate } : null
+              ].filter((d): d is NonNullable<typeof d> => d !== null) : undefined}
               className="text-sm"
               classNames={{
                 months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
